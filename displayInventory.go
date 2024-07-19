@@ -4,6 +4,7 @@ import (
 	"encoding/csv"
 	"fmt"
 	"os"
+	"strconv"
 )
 
 func displayInventory(s string) {
@@ -36,21 +37,24 @@ func displayInventory(s string) {
 
 	fileReader := csv.NewReader(file)
 
-
 	content, err2 := fileReader.ReadAll()
 
 	if err2 != nil {
 		fmt.Println("==== Error ====", err2)
 	}
 
-	fmt.Println(content)
+	printContent := convertSliceToStruct(content)
+
+	for _, item := range printContent {
+		fmt.Printf("Id: %d Name: %s Qtt: %d Price: %.2f\n", item.id, item.name, item.qtt, item.price)
+	}
 
 }
 
 func setNewFile(f *os.File) {
 
 	header := []string {
-		"Id",
+		"ID",
 		"Name",
 		"Qtt",
 		"Price",
@@ -60,4 +64,47 @@ func setNewFile(f *os.File) {
 
 	defer fileWriter.Flush()
 	fileWriter.Write(header)
+}
+
+
+func convertSliceToStruct(content [][]string) []item {
+	var items []item 
+
+	for i, line := range content {
+
+		if i == 0 {
+			continue
+		}
+
+		id, err := strconv.Atoi(line[0])
+
+		if err != nil {
+			fmt.Println("Error converting ID:", err)
+			continue
+		}
+
+		qtt, err := strconv.Atoi(line[2])
+		if err != nil {
+			fmt.Println("Error converting Quantity:", err)
+			continue
+		}
+
+		price, err := strconv.ParseFloat(line[3], 64)
+		if err != nil {
+			fmt.Println("Error converting Price:", err)
+			continue
+		}
+
+		item := item{
+			id:    id,
+			name:  line[1],
+			qtt:   qtt,
+			price: price,
+		}
+
+		items = append(items, item)
+
+	}
+
+	return items
 }
