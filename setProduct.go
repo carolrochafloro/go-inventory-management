@@ -1,7 +1,10 @@
 package main
 
 import (
+	"encoding/csv"
 	"fmt"
+	"os"
+	"strconv"
 )
 
 func setProduct() {
@@ -21,23 +24,32 @@ func setProduct() {
 	var price float64
 	fmt.Scanln(&price)
 
-	newItem := item {
-		id: id,
-		name: name,
-		qtt: qtt,
-		price: price,
+	var newItem = []string {
+		strconv.Itoa(id), 
+		name,
+		strconv.Itoa(qtt),
+		strconv.FormatFloat(price, 'f', 2, 64),
 	}
 
-	
+	writeProduct(newItem)
+}
 
-	// file, err := os.Open("inventory.csv")
+func writeProduct(s []string) {
 
-	// if err != nil {
-	// 	fmt.Println("==== Error ====", err)
-	// }
+	file, err := os.OpenFile("inventory.csv", os.O_WRONLY|os.O_APPEND, 0644)
 
-	// fileWriter := csv.NewWriter(file)
+	if err != nil {
+		fmt.Println("==== Error ====", err)
+	}
 
+	defer file.Close()
 
-	
+	fileWriter := csv.NewWriter(file)
+	defer fileWriter.Flush()
+	fileWriter.Write(s)
+
+	if err := fileWriter.Error(); err != nil {
+        fmt.Println("==== Error ====", err)
+    }
+
 }
